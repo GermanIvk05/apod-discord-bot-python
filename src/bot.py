@@ -1,27 +1,46 @@
 import os
 
 import discord
+from discord.ext import commands
 from dotenv import load_dotenv
+
+import apod_object_parser as apod
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
+API_KEY = os.getenv("NASA_APIKEY")
 
 
-class MyClient(discord.Client):
-    async def on_ready(self):
-        print(f" Logged on as {self.user}!")
+description = '''
+Each day a different image or photograph of our fascinating universe is featured, along with a brief explanation written by a professional astronomer.
+'''
 
-    async def on_message(self, message):
-        print(f"Message from {self, message}")
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix='?', description=description, intents=intents)
 
 
-def main() -> None:
-    intents = discord.Intents.default()
-    intents.message_content = True
+@bot.event
+async def on_ready():
+    print(f" Logged on as {bot.user}!")
 
-    client = MyClient(intents=intents)
-    client.run(TOKEN)
+
+@bot.command()
+async def today(ctx) -> None:
+    """
+    Provides today's APOD
+    """
+    data = apod.get_data(API_KEY)
+
+    embed = discord.Embed(title=apod.get_title(data), description=apod.get_explaination(data))
+    embed.set_author(name=apod.get_date(data))
+    embed.set_image(
+        url=apod.get_hdurl(data) if apod.get_media_type(data) == "image" else apod.get_url(data)
+        )
+    embed.set_footer(text=f"Imagse Credit & Copyright: {apod.get_copyright(data)}")
+    await ctx.send(embed=embed)
 
 
 if __name__ == "__main__":
-    main()
+    bot.run(TOKEN)
