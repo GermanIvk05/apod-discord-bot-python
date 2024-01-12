@@ -5,14 +5,17 @@ import requests
 from PIL import Image
 
 
-def get_data(api_key):
-    raw_response = requests.get(f'https://api.nasa.gov/planetary/apod?api_key={api_key}').text
+def get_data(*, api_key="DEMO_KEY", **kwargs) -> dict:
+    params = {"api_key": api_key}
+    params.update(kwargs)
+
+    raw_response = requests.get(f'https://api.nasa.gov/planetary/apod', params=params).text
     response = json.loads(raw_response)
     return response
 
 
 def get_copyright(response):
-    copyright = response['copyright']
+    copyright = response.get("copyright")
     return copyright
 
 
@@ -38,6 +41,10 @@ def get_media_type(response):
 def get_service_version(response): 
     service_version = response['service_version']
     return service_version
+
+def get_thumbnail_url(response):
+    thumbnail_url = response["thumbnail_url"]
+    return thumbnail_url
 
 
 def get_title(response):
