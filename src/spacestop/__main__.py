@@ -24,7 +24,7 @@ class SpaceStop(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @commands.command()
+    @commands.command(aliases=["cd", "2day"])
     async def today(self, ctx: commands.Context) -> None:
         """
         Get today's APOD
@@ -32,7 +32,7 @@ class SpaceStop(commands.Cog):
         article = Article.from_response(parser.get_data(api_key=API_KEY))
         await article.send(ctx)
 
-    @commands.command()
+    @commands.command(aliases=["rd", "rnd", "rand"])
     async def random(self, ctx: commands.Context) -> None:
         """
         Get random APOD
@@ -40,12 +40,18 @@ class SpaceStop(commands.Cog):
         article = Article.from_response(parser.get_data(api_key=API_KEY, count=1)[0])
         await article.send(ctx)
           
-    @commands.command(name="date")
-    async def get_date(self, ctx: commands.Context, day: str, month: str, year: str) -> None:
+    @commands.command(name="date", aliases=["dt"])
+    async def get_date(
+        self, 
+        ctx: commands.Context, 
+        day: int = commands.parameter(default=lambda day: int(day), description="in 'DD' format"), 
+        month: int = commands.parameter(default=lambda month: int(month), description="in 'MM' format"), 
+        year: int = commands.parameter(default=lambda year: int(year), description="in 'YYYY' format")
+    ) -> None:
         """
         Get APOD for specific date
         """
-        in_date = date(int(year), int(month), int(day))
+        in_date = date(year, month, day)
 
         if not is_valid_date(in_date):
             return
