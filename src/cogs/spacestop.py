@@ -54,11 +54,8 @@ class Article:
     
         return cls(title, description, content, date, copyright)
     
-
-    def as_embed(self) -> discord.Embed:
-        """
-        Creates APOD discord embed
-        """
+    
+    async def send(self, ctx: commands.Context) -> None:
         embed = discord.Embed(title=self.title, description=self.description)
         embed.set_author(name=self.date.strftime("%d %b %Y"))
 
@@ -68,13 +65,19 @@ class Article:
         if self.copyright:
             embed.set_footer(text=f"Image Credit & Copyright: {self.copyright}")
 
-        return embed
-    
-    async def send(self, ctx: commands.Context) -> None:
-        await ctx.send(embed=self.as_embed())
+        await ctx.send(embed=embed)
 
         if self.content.is_video():
             await ctx.send(content=self.content.url)
+
+
+def is_valid_date(in_date: date) -> bool:
+    """
+    Checks if the date is between today and June 16th 1995    
+    """
+    min_date = date(1995, 6, 16)
+    max_date = date.today()
+    return max_date >= in_date >= min_date
 
 
 class SpaceStop(commands.Cog):
@@ -106,13 +109,13 @@ class SpaceStop(commands.Cog):
         """
         Get APOD for specific date
         """
-        min_date = date(1995, 6, 16)
-        max_date = date.today()
-        user_date = date(int(year), int(month), int(day))
+        in_date = date(int(year), int(month), int(day))
 
-        if max_date >= user_date >= min_date:
-            article = Article.from_data(api_key=API_KEY, date=user_date.strftime("%Y-%m-%d"))
-            await article.send(ctx)
+        if not is_valid_date(in_date):
+            return
+            
+        article = Article.from_data(api_key=API_KEY, date=in_date.strftime("%Y-%m-%d"))
+        await article.send(ctx)
 
 
 async def setup(bot: commands.Bot) -> None:
