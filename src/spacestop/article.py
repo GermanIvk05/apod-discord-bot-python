@@ -5,7 +5,6 @@ from datetime import date, datetime
 from typing import Any, Optional
 
 import discord
-from discord.ext import commands
 
 from . import parser
 
@@ -14,6 +13,7 @@ from . import parser
 class Media:
     type: str
     url: str
+    thumbnail_url: Optional[str] = None
     copyright: Optional[str] = None
 
     def is_video(self) -> bool:
@@ -45,6 +45,7 @@ class Article(discord.ui.View):
         content = Media(
             type=parser.get_media_type(data),
             url=parser.get_hdurl(data) or parser.get_url(data),
+            thumbnail_url=parser.get_thumbnail_url(data),
             copyright=parser.get_copyright(data)
         )
         return cls(
@@ -62,6 +63,9 @@ class Article(discord.ui.View):
             embed.set_footer(text=f"Image Credit & Copyright: {self.content.copyright}")
 
         if self.content.is_video():
+            embed.set_thumbnail(url=self.content.thumbnail_url)
+
+            # initialize the discord.ui.View to add a link button to YouTube
             super().__init__()
             self.add_item(discord.ui.Button(label="YouTube", url=embed_to_video(self.content.url), emoji="▶️"))
             await interaction.response.send_message(embed=embed, view=self)

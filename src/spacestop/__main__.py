@@ -5,8 +5,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from . import parser
 from .article import Article
+from . import parser
 
 API_KEY = os.getenv("NASA_APIKEY")
 
@@ -15,7 +15,7 @@ def is_valid_date(in_date: date) -> bool:
     """
     Checks if the date is between today and June 16th 1995    
     """
-    min_date = date(1995, 6, 16)
+    min_date = date(1995, 6, 16)    # first Astronomy Pictire Of the Day
     max_date = date.today()
     return max_date >= in_date >= min_date
 
@@ -30,7 +30,7 @@ class SpaceStop(commands.Cog):
         """
         Get today's APOD
         """
-        article = Article.from_response(parser.get_data(api_key=API_KEY))
+        article = Article.from_response(parser.get_data(thumbs=True, api_key=API_KEY))
         await article.send(interaction)
 
     @app_commands.command()
@@ -38,22 +38,18 @@ class SpaceStop(commands.Cog):
         """
         Get random APOD
         """
-        article = Article.from_response(parser.get_data(api_key=API_KEY, count=1)[0])
+        article = Article.from_response(parser.get_data(count=1, thumbs=True, api_key=API_KEY)[0])
         await article.send(interaction)
           
     @app_commands.command(name="date")
-    async def get_date(self, interaction: discord.Interaction, day: str, month: str, year: str) -> None:
+    async def get_date(self, interaction: discord.Interaction, day: int, month: int, year: int) -> None:
         """
         Get APOD for specific date
         """
-        in_date = date(int(year), int(month), int(day))
+        in_date = date(year, month, day)
 
-        if not is_valid_date(in_date):
-            return
-            
-        article = Article.from_response(
-            parser.get_data(api_key=API_KEY, date=in_date.strftime("%Y-%m-%d"))
-            )
-        await article.send(interaction)
+        if is_valid_date(in_date):
+            article = Article.from_response(parser.get_data(date=in_date, thumbs=True, api_key=API_KEY))
+            await article.send(interaction)
 
 

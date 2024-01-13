@@ -2,66 +2,83 @@
 Modifed version of "apod_object_parser.py" from https://github.com/nasa/apod-api
 """
 
-import json
 import os
+from datetime import date
+from typing import Any, Optional
 
 import requests
 from PIL import Image
 
+StartDate, EndDate = date, date
+DateRange = tuple[StartDate, EndDate]
 
-def get_data(*, api_key="DEMO_KEY", **kwargs) -> dict:
+
+def get_data(
+        date: Optional[date] = None, 
+        date_range: Optional[DateRange] = None,
+        count: Optional[int] = None, 
+        thumbs: Optional[bool] = None,
+        api_key: str = "DEMO_KEY"
+        ) -> dict[str, Any]:
     params = {"api_key": api_key}
-    params.update(kwargs)
+    params.update({"date": date.strftime("%Y-%m-%d")} if date else {})
+    params.update({
+        "start_date": date_range[0].strftime("%Y-%m-%d"),
+        "end_date": date_range[1].strftime("%Y-%m-%d")
+        } if date_range else {})
+    params.update({"count": count} if count else {})
+    params.update({"thumbs": thumbs} if thumbs else {})
 
-    raw_response = requests.get(f'https://api.nasa.gov/planetary/apod', params=params).text
-    response = json.loads(raw_response)
-    return response
+    response = requests.get(f'https://api.nasa.gov/planetary/apod', params=params)
+    return response.json()
 
 
-def get_copyright(response):
+def get_copyright(response: dict[str, Any]) -> str | None:
     copyright = response.get("copyright")
     return copyright
 
 
-def get_date(response):
-    date = response['date']
+def get_date(response: dict[str, Any]) -> str | None:
+    date = response.get("date")
     return date
 
 
-def get_explaination(response):
-    explaination = response['explanation']
+def get_explaination(response: dict[str, Any]) -> str | None:
+    explaination = response.get("explanation")
     return explaination
 
 
-def get_hdurl(response):
+def get_hdurl(response: dict[str, Any]) -> str | None:
     hdurl = response.get("hdurl")
     return hdurl
 
 
-def get_media_type(response):
-    media_type = response['media_type']
+def get_media_type(response: dict[str, Any]) -> str | None:
+    media_type = response.get("media_type")
     return media_type
 
-def get_service_version(response): 
-    service_version = response['service_version']
+
+def get_service_version(response: dict[str, Any]) -> str | None: 
+    service_version = response.get("service_version")
     return service_version
 
-def get_thumbnail_url(response):
-    thumbnail_url = response["thumbnail_url"]
+
+def get_thumbnail_url(response: dict[str, Any]) -> str | None:
+    thumbnail_url = response.get("thumbnail_url")
     return thumbnail_url
 
 
-def get_title(response):
-    service_version = response['title']
+def get_title(response: dict[str, Any]) -> str | None:
+    service_version = response.get("title")
     return service_version
 
 
-def get_url(response):
-    url = response['url']
+def get_url(response: dict[str, Any]) -> str:
+    url = response.get("url")
     return url
 
 
-def download_image(url, date):
+def download_image(url: str, date: str) -> None:
     if os.path.isfile(f'{date}.png') == False:
         raw_image = requests.get(url).content
         with open(f'{date}.jpg', 'wb') as file:
@@ -71,7 +88,7 @@ def download_image(url, date):
         return FileExistsError
 
 
-def convert_image(image_path):
+def convert_image(image_path: str) -> None:
     path_to_image = os.path.normpath(image_path)
 
     basename = os.path.basename(path_to_image)
