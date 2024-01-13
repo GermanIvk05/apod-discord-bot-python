@@ -24,10 +24,17 @@ class Media:
     
     def has_copyright(self) -> bool:
         return self.copyright is not None
-    
+
+
+def embed_to_video(url: str) -> str:
+    """
+    Contverts YouTube embed link to YouTube video link
+    """
+    return f"https://www.youtube.com/watch?v={url.split('/')[-1].split('?')[0]}"
+
 
 @dataclass
-class Article:
+class Article(discord.ui.View):
     title: str
     description: str
     content: Media
@@ -51,13 +58,13 @@ class Article:
         embed = discord.Embed(title=self.title, description=self.description)
         embed.set_author(name=self.date.strftime("%d %b %Y"))
 
-        if self.content.is_image():
-            embed.set_image(url=self.content.url)
-
         if self.content.has_copyright():
             embed.set_footer(text=f"Image Credit & Copyright: {self.content.copyright}")
 
-        await interaction.response.send_message(embed=embed)
-
         if self.content.is_video():
-            await interaction.response.send_message(self.content.url)
+            super().__init__()
+            self.add_item(discord.ui.Button(label="YouTube", url=embed_to_video(self.content.url), emoji="▶️"))
+            await interaction.response.send_message(embed=embed, view=self)
+        else:
+            embed.set_image(url=self.content.url)
+            await interaction.response.send_message(embed=embed)
