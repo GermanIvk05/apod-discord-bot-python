@@ -2,6 +2,7 @@ import os
 from datetime import date
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from . import parser
@@ -24,34 +25,28 @@ class SpaceStop(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @commands.command(aliases=["cd", "2day"])
-    async def today(self, ctx: commands.Context) -> None:
+    @app_commands.command()
+    async def today(self, interaction: discord.Interaction) -> None:
         """
         Get today's APOD
         """
         article = Article.from_response(parser.get_data(api_key=API_KEY))
-        await article.send(ctx)
+        await article.send(interaction)
 
-    @commands.command(aliases=["rd", "rnd", "rand"])
-    async def random(self, ctx: commands.Context) -> None:
+    @app_commands.command()
+    async def random(self, interaction: discord.Interaction) -> None:
         """
         Get random APOD
         """
         article = Article.from_response(parser.get_data(api_key=API_KEY, count=1)[0])
-        await article.send(ctx)
+        await article.send(interaction)
           
-    @commands.command(name="date", aliases=["dt"])
-    async def get_date(
-        self, 
-        ctx: commands.Context, 
-        day: int = commands.parameter(default=lambda day: int(day), description="in 'DD' format"), 
-        month: int = commands.parameter(default=lambda month: int(month), description="in 'MM' format"), 
-        year: int = commands.parameter(default=lambda year: int(year), description="in 'YYYY' format")
-    ) -> None:
+    @app_commands.command(name="date")
+    async def get_date(self, interaction: discord.Interaction, day: str, month: str, year: str) -> None:
         """
         Get APOD for specific date
         """
-        in_date = date(year, month, day)
+        in_date = date(int(year), int(month), int(day))
 
         if not is_valid_date(in_date):
             return
@@ -59,6 +54,6 @@ class SpaceStop(commands.Cog):
         article = Article.from_response(
             parser.get_data(api_key=API_KEY, date=in_date.strftime("%Y-%m-%d"))
             )
-        await article.send(ctx)
+        await article.send(interaction)
 
 

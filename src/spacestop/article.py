@@ -9,6 +9,7 @@ from discord.ext import commands
 
 from . import parser
 
+
 @dataclass
 class Media:
     type: str
@@ -46,9 +47,9 @@ class Article:
             date=datetime.strptime(parser.get_date(data), "%Y-%m-%d")
         )
 
-    async def send(self, ctx: commands.Context) -> discord.Embed:
+    async def send(self, interaction: discord.Interaction) -> discord.Embed:
         embed = discord.Embed(title=self.title, description=self.description)
-        embed.set_author(name=self.date.strftime("%Y-%m-%d"))
+        embed.set_author(name=self.date.strftime("%d %b %Y"))
 
         if self.content.is_image():
             embed.set_image(url=self.content.url)
@@ -56,7 +57,7 @@ class Article:
         if self.content.has_copyright():
             embed.set_footer(text=f"Image Credit & Copyright: {self.content.copyright}")
 
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
         if self.content.is_video():
-            await ctx.send(content=self.content.url)
+            await interaction.response.send_message(self.content.url)
