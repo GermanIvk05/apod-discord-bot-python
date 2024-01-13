@@ -1,3 +1,7 @@
+"""
+Modifed version of "apod_object_parser.py" from https://github.com/nasa/apod-api
+"""
+
 import json
 import os
 
@@ -30,7 +34,7 @@ def get_explaination(response):
 
 
 def get_hdurl(response):
-    hdurl = response['hdurl']
+    hdurl = response.get("hdurl")
     return hdurl
 
 

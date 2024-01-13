@@ -21,7 +21,7 @@ bot = commands.Bot(command_prefix='?', description=description, intents=intents)
 @bot.event
 async def on_ready() -> None:
     print(f" Logged on as {bot.user}!")
-    await bot.load_extension("cogs.spacestop")
+    await bot.load_extension("spacestop")
 
 if __name__ == "__main__":
     bot.run(TOKEN)
