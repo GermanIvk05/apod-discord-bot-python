@@ -7,7 +7,11 @@ from datetime import date
 from typing import Any, Optional
 
 import requests
+from dotenv import load_dotenv
 from PIL import Image
+
+load_dotenv()
+API_KEY = os.getenv("NASA_APIKEY")
 
 StartDate, EndDate = date, date
 DateRange = tuple[StartDate, EndDate]
@@ -31,6 +35,27 @@ def get_data(
 
     response = requests.get(f'https://api.nasa.gov/planetary/apod', params=params)
     return response.json()
+
+
+def is_valid_date(in_date: date) -> bool:
+    """
+    Checks if the date is between today and June 16th 1995    
+    """
+    min_date = date(1995, 6, 16)    # first Astronomy Picture Of the Day
+    max_date = date.today()
+    return max_date >= in_date >= min_date
+
+
+def get_specific_APOD(date: date) -> dict[str, Any]:
+    return get_data(date=date, thumbs=True, api_key=API_KEY)
+
+
+def get_random_APOD(count: int) -> dict[str, Any]:
+    return get_data(count=count, thumbs=True, api_key=API_KEY)
+
+
+def get_today_APOD() -> dict[str, Any]:
+    return get_data(api_key=API_KEY)
 
 
 def get_copyright(response: dict[str, Any]) -> str | None:

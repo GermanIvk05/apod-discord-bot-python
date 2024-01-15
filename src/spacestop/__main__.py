@@ -1,21 +1,19 @@
-import os
 from datetime import date
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from .article import Article
 from . import parser
-
-API_KEY = os.getenv("NASA_APIKEY")
+from .article import create_embed_from, parse_media_and_article_from
+from .article_ui import Navigation
 
 
 def is_valid_date(in_date: date) -> bool:
     """
     Checks if the date is between today and June 16th 1995    
     """
-    min_date = date(1995, 6, 16)    # first Astronomy Pictire Of the Day
+    min_date = date(1995, 6, 16)    # first Astronomy Picture Of the Day
     max_date = date.today()
     return max_date >= in_date >= min_date
 
@@ -30,16 +28,16 @@ class SpaceStop(commands.Cog):
         """
         Get today's APOD
         """
-        article = Article.from_response(parser.get_data(thumbs=True, api_key=API_KEY))
-        await article.send(interaction)
+        article = article = parse_media_and_article_from(data=parser.get_today_APOD())
+        await interaction.response.send_message(embed=create_embed_from(article), view=Navigation(article))
 
     @app_commands.command()
     async def random(self, interaction: discord.Interaction) -> None:
         """
         Get random APOD
         """
-        article = Article.from_response(parser.get_data(count=1, thumbs=True, api_key=API_KEY)[0])
-        await article.send(interaction)
+        article = parse_media_and_article_from(data=parser.get_random_APOD(count=1)[0])
+        await interaction.response.send_message(embed=create_embed_from(article), view=Navigation(article))
           
     @app_commands.command(name="date")
     async def get_date(self, interaction: discord.Interaction, day: int, month: int, year: int) -> None:
@@ -49,7 +47,7 @@ class SpaceStop(commands.Cog):
         in_date = date(year, month, day)
 
         if is_valid_date(in_date):
-            article = Article.from_response(parser.get_data(date=in_date, thumbs=True, api_key=API_KEY))
-            await article.send(interaction)
+            article = parse_media_and_article_from(data=parser.get_specific_APOD(date=in_date))
+            await interaction.response.send_message(embed=create_embed_from(article), view=Navigation(article))
 
 
