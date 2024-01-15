@@ -6,16 +6,7 @@ from discord.ext import commands
 
 from . import parser
 from .article import create_embed_from, parse_media_and_article_from
-from .article_ui import Navigation
-
-
-def is_valid_date(in_date: date) -> bool:
-    """
-    Checks if the date is between today and June 16th 1995    
-    """
-    min_date = date(1995, 6, 16)    # first Astronomy Picture Of the Day
-    max_date = date.today()
-    return max_date >= in_date >= min_date
+from .ui.navigation import Navigation
 
 
 class SpaceStop(commands.Cog):
@@ -46,7 +37,7 @@ class SpaceStop(commands.Cog):
         """
         in_date = date(year, month, day)
 
-        if is_valid_date(in_date):
+        if parser.is_valid_date(in_date):
             article = parse_media_and_article_from(data=parser.get_specific_APOD(date=in_date))
             await interaction.response.send_message(embed=create_embed_from(article), view=Navigation(article))
 

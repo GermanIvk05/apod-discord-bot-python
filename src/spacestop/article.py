@@ -51,7 +51,11 @@ def parse_media_and_article_from(data: dict[str, Any]) -> Article:
     
     
 def create_embed_from(article: Article) -> discord.Embed:
-    embed = discord.Embed(title=article.title, description=article.content)
+    embed = discord.Embed(
+        title=article.title, 
+        description=article.content, 
+        url=f"https://apod.nasa.gov/apod/ap{article.date.strftime('%y%m%d')}.html"
+        )
 
     embed.set_author(name=article.date.strftime("%d %b %Y"))
 

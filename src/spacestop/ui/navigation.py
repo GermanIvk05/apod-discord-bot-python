@@ -2,22 +2,12 @@ from datetime import date, datetime, timedelta
 
 import discord
 
-from . import parser
-from .article import Article, create_embed_from, parse_media_and_article_from
+from .. import parser
+from ..article import Article, create_embed_from, parse_media_and_article_from
 
 
 class NotAValidDate(Exception):
     pass
-
-
-def is_valid_date(in_date: date) -> bool:   # IS DUPLICATED IN THE __main__ TODO: FIX IT!!!
-    """
-    Checks if the date is between today and June 16th 1995    
-    """
-    min_date = date(1995, 6, 16)    # first Astronomy Picture Of the Day
-    max_date = date.today()
-    return max_date >= in_date >= min_date
-
 
 def embed_to_video(url: str) -> str:
     """
@@ -34,7 +24,7 @@ def calulate_next_day(current_date: date) -> date:
     next_datetime = current_datetime + timedelta(days=1)
     next_date = next_datetime.date()
 
-    if not is_valid_date(next_date):
+    if not parser.is_valid_date(next_date):
         raise NotAValidDate
     
     return next_date
@@ -48,7 +38,7 @@ def calculate_previous_day(current_date: date) -> date:
     previous_datetime = current_datetime - timedelta(days=1)
     previous_date = previous_datetime.date()
 
-    if not is_valid_date(previous_date):
+    if not parser.is_valid_date(previous_date):
         raise NotAValidDate
     
     return previous_date
@@ -88,7 +78,7 @@ class Navigation(discord.ui.View):
             await interaction.response.edit_message(embed=create_embed_from(article), view=self)
 
         except NotAValidDate:
-            await interaction.response.send_message(content="You reached the latest/oldest of Astronomy Picture of the Day!")
+            await interaction.response.send_message(content="You reached the latest/oldest of Astronomy Picture of the Day!", ephemeral=True)
 
 
     @discord.ui.button(label="Next", style=discord.ButtonStyle.secondary, emoji="➡️")
@@ -112,4 +102,4 @@ class Navigation(discord.ui.View):
             await interaction.response.edit_message(embed=create_embed_from(article), view=self)
 
         except NotAValidDate:
-            await interaction.response.send_message(content="You reached the latest/oldest of Astronomy Picture of the Day!") # TODO: CHANGE THIS TO A CONFIRMATION MESSAGE
+            await interaction.response.send_message(content="You reached the latest/oldest of Astronomy Picture of the Day!", ephemeral=True)
