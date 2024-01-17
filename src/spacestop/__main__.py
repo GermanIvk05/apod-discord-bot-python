@@ -19,7 +19,7 @@ class SpaceStop(commands.Cog):
         """
         Get today's APOD
         """
-        article = article = parse_media_and_article_from(data=parser.get_today_APOD())
+        article = parse_media_and_article_from(data=parser.get_today_APOD())
         await interaction.response.send_message(embed=create_embed_from(article), view=Navigation(article))
 
     @app_commands.command()
@@ -40,5 +40,7 @@ class SpaceStop(commands.Cog):
         if parser.is_valid_date(in_date):
             article = parse_media_and_article_from(data=parser.get_specific_APOD(date=in_date))
             await interaction.response.send_message(embed=create_embed_from(article), view=Navigation(article))
+        else:
+            await interaction.response.send_message(content="Please, eneter a date between today and June 16th, 1995", ephemeral=True)
 
 
