@@ -1,0 +1,7 @@
+services:
+  bot:
+    build: .
+    container_name: spacestop-bot
+    command: python3 main.py
+    volumes:
+      - .:/bot
