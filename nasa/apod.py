@@ -24,19 +24,18 @@ class APIDataFetchError(APODError):
     pass
 
 
-def validate_date(date_to_validate: date, start: date = date(1995, 6, 16), end: date = date.today()) -> date:
-    """Validate if the date is within the specified range."""
-    if not start <= date_to_validate <= end:
-        raise DateOutOfRangeError("The date must be between June 16th, 1995, and today.")
-    return date_to_validate
-
-
 class APODClient:
     BASE_URL = 'https://api.nasa.gov/planetary/apod'
 
-    def __init__(self, key: str) -> None:
+    def __init__(self, key: str):
         self.session = requests.Session()
         self.key = key
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.session.close()
 
     def _fetch(self, params: Dict[str, Any]) -> Any:
         try:
@@ -47,9 +46,12 @@ class APODClient:
         return response.json()
 
     def _build_params(self, **kwargs) -> Dict[str, Any]:
+        upper_bound = date.today()
+        lower_bound = date(1995, 6, 16)
+
         params = {'api_key': self.key}
         params.update({
-            k: validate_date(v).isoformat() if isinstance(v, date) else v
+            k: v.isoformat() if isinstance(v, date) and upper_bound >= v >= lower_bound else v
             for k, v in kwargs.items() if v is not None
         })
         return params
@@ -65,8 +67,7 @@ class APODClient:
         return self._fetch(params)
 
     def get_random(self, count: int, thumbs: bool = False) -> List[Dict[str, Any]]:
+        if count < 1:
+            raise ValueError('Counter must be a positive integer.')
         params = self._build_params(count=count, thumbs=thumbs)
         return self._fetch(params)
-
-    def __del__(self):
-        self.session.close()
