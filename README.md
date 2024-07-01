@@ -1,4 +1,4 @@
-# SpaceStop-Bot
+# APOD-Discord-Bot-Deprecated
 
 Discord bot of the SpaceStop's projects to provide great viewing experience of Astronomy Picture Of the Day and other
 NASA resources. The primary goal of the project is to be educational by applying knowledge and skills to build something
